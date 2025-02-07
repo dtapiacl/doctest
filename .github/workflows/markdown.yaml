@@ -1,0 +1,24 @@
+---
+# yamllint disable rule:quoted-strings
+name: markdownlint
+
+"on":
+  push:
+    branches:
+      - main
+
+  pull_request:
+    - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  markdownlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run mdl
+        uses: actionshub/markdownlint@main
