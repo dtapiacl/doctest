@@ -1,4 +1,4 @@
-name: Lint Markdown Syntax
+name: Lint Markdown Syntax and Code Snippets
 
 on:
   push:
@@ -23,20 +23,25 @@ jobs:
       with:
         node-version: '14'  # Or any version you require
 
-    # Step 3: Install markdownlint-cli
-    - name: Install markdownlint-cli
-      run: npm install -g markdownlint-cli
+    # Step 3: Install markdownlint-cli and yamllint
+    - name: Install markdownlint-cli and yamllint
+      run: |
+        npm install -g markdownlint-cli
+        sudo apt-get install yamllint
 
-    # Step 4: Run markdownlint on the Markdown files
+    # Step 4: Lint Markdown files
     - name: Lint Markdown files
-      run: |
-        # Lint the Markdown files, you can specify file paths if you want to limit it to a folder
-        markdownlint "**/*.md"
+      run: markdownlint "**/*.md"
 
-    # Optionally, you can fail the workflow if linting errors occur
-    - name: Fail if linting errors found
+    # Step 5: Extract YAML code blocks from Markdown and lint them
+    - name: Extract YAML code blocks and lint them
       run: |
-        if [[ $(markdownlint "**/*.md" --fix --silent) ]]; then
-          echo "Markdownlint found issues."
-          exit 1
+        # Extract YAML code blocks from .md files
+        grep -oP '```yaml\n\K.*?(?=\n```)' $(find . -name '*.md') > yaml_code_snippets.txt
+        # Lint the extracted YAML code
+        if [ -s yaml_code_snippets.txt ]; then
+          echo "YAML code snippets found, linting them..."
+          cat yaml_code_snippets.txt | yamllint -
+        else
+          echo "No YAML code snippets found in Markdown files."
         fi
