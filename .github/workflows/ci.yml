@@ -1,0 +1,42 @@
+name: Lint Markdown Syntax
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout code from the repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Node.js (needed for markdownlint-cli)
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '14'  # Or any version you require
+
+    # Step 3: Install markdownlint-cli
+    - name: Install markdownlint-cli
+      run: npm install -g markdownlint-cli
+
+    # Step 4: Run markdownlint on the Markdown files
+    - name: Lint Markdown files
+      run: |
+        # Lint the Markdown files, you can specify file paths if you want to limit it to a folder
+        markdownlint "**/*.md"
+
+    # Optionally, you can fail the workflow if linting errors occur
+    - name: Fail if linting errors found
+      run: |
+        if [[ $(markdownlint "**/*.md" --fix --silent) ]]; then
+          echo "Markdownlint found issues."
+          exit 1
+        fi
